@@ -1,0 +1,26 @@
+version: '3'
+
+services:
+  app:
+    container_name: simplified_picpay
+    image: node:18.16.0-alpine3.16
+    command: sh -c "tail -f /dev/null"
+    ports:
+      - "3000:3000"
+      - "5555:5555"
+    volumes:
+      - .:/usr/src/app
+    depends_on:
+      - mongo
+
+  mongo:
+    build: ./docker/mongodb_rs
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+      MONGO_INITDB_DATABASE: simplified_picpay
+      MONGO_REPLICA_HOST: localhost
+      MONGO_REPLICA_PORT: 27017
+    ports:
+      - "27017:27017"
+    restart: always
