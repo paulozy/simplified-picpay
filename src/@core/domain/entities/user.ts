@@ -57,6 +57,19 @@ export class User {
     return right(user)
   }
 
+  public update(props: Partial<UserProps>): CreateUserResponse {
+    const {name, type} = props
+
+    if(name && !User.validateName(name)) return left(new InvalidNameError(name))
+    if(type && !User.validateType(type)) return left(new InvalidTypeError(type))
+
+    this._name = name ?? this._name
+    this._type = type ?? this._type
+    this._updated_at = Date.now()
+
+    return right(this)
+  }
+
   private static validateName(name: string): boolean {
     if (!name || name.trim().length < 3 || name.trim().length > 255) return false
     return true
