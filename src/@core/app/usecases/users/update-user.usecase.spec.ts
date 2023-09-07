@@ -79,4 +79,38 @@ describe('register user usecase', () => {
     expect(userOrError.isLeft()).toBeTruthy()
     expect(userOrError.value).toBeInstanceOf(InvalidTypeError)
   })
+
+  it('should update a user with just name', async () => {
+    const userOrError = await usecase.execute({
+      id: defaultUser.id,
+      name: 'John Doe Updated'
+    })
+
+    expect(userOrError.isRight()).toBeTruthy()
+
+    const user = userOrError.value as User
+        
+    expect(user.id).toBeDefined()
+    expect(user.name).toEqual('John Doe Updated')
+    expect(user.type).toEqual('common')
+    expect(user.created_at).toBeDefined()
+    expect(user.updated_at).toBeDefined()
+  })
+
+  it('should update a user with just type', async () => {
+    const userOrError = await usecase.execute({
+      id: defaultUser.id,
+      type: 'shopkeeper'
+    })
+
+    expect(userOrError.isRight()).toBeTruthy()
+
+    const user = userOrError.value as User
+        
+    expect(user.id).toBeDefined()
+    expect(user.name).toEqual('John Doe')
+    expect(user.type).toEqual('shopkeeper')
+    expect(user.created_at).toBeDefined()
+    expect(user.updated_at).toBeDefined()
+  })
 })
