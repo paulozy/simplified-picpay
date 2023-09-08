@@ -13,15 +13,21 @@ export class InMemoryTransactionRepository implements TransactionRepository {
     return transaction;
   }
   
-  async list({date, payee, payer}: ListTransactionsInput): Promise<Transaction[]> {
-    const normalizedDate = date ? new Date(date).getTime() : null;
+  async list({date, payee, payer, value}: ListTransactionsInput): Promise<Transaction[]> {
+    let transactions = this.transactions.filter(transaction => transaction.payer === payer);
 
-    const transactions = this.transactions.filter(transaction => {
-      if(payee && transaction.payee !== payee) return false;
-      if(payer && transaction.payer !== payer) return false;
-      if(date && transaction.created_at !== normalizedDate) return false;
-      return true;
-    })
+    if(payee) {
+      transactions = transactions.filter(transaction => transaction.payee === payee);
+    }
+
+    if(value) {
+      transactions = transactions.filter(transaction => transaction.value === value);
+    }
+
+    if(date) {
+      const normalizedDate = new Date(date).getTime()
+      transactions = transactions.filter(transaction => transaction.created_at === normalizedDate);
+    }
 
     return transactions;
   }
