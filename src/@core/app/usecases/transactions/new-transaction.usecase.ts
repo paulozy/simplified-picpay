@@ -1,12 +1,13 @@
 import { InvalidValueError } from "@core/domain/entities/@errors/invalid-value.error";
 import { Transaction } from "@core/domain/entities/transaction";
+import { AuthorizerGateway, AuthorizerStatus } from "@core/domain/gateways/authorizer.interface";
 import { TransactionRepository } from "@core/domain/repositories/transaction-repository.interface";
 import { UserRepository } from "@core/domain/repositories/user-repository.interface";
 import { Either, left, right } from "@core/logic/either";
 import { BallanceNotEnoughError } from "../@errors/ballance-not-enough.error";
 import { PayeeNotFoundError } from "../@errors/payee-not-found.error";
 import { PayerNotFoundError } from "../@errors/payer-not-found.error";
-import { ShopkeeperCannotMakeTransactionsError } from "../@errors/shopkeeper-cannot-make-transactions.error";
+import { TransactionNotAuthorizedError } from "../@errors/transaction-not-authorized.error";
 
 export type NewTransactionUseCaseInput = {
   payer: string;
@@ -19,7 +20,7 @@ export type NewTransactionUseCaseResponse = Either<
   | PayerNotFoundError 
   | PayeeNotFoundError
   | BallanceNotEnoughError
-  | ShopkeeperCannotMakeTransactionsError, 
+  | TransactionNotAuthorizedError, 
   Transaction
 >
 
@@ -27,6 +28,7 @@ export class NewTransactionUseCase {
   constructor(
     private readonly userRepository: UserRepository,
     private readonly transactionRepository: TransactionRepository,
+    private readonly authorizerGateway: AuthorizerGateway
   ) {}
 
   async execute(input: NewTransactionUseCaseInput): Promise<NewTransactionUseCaseResponse> {
@@ -36,10 +38,14 @@ export class NewTransactionUseCase {
     if(!payer) return left(new PayerNotFoundError(input.payer));
     if(!payee) return left(new PayeeNotFoundError(input.payee));
 
-    if(payer.type === 'shopkeeper') return left(new ShopkeeperCannotMakeTransactionsError());
+    if(payer.type === 'shopkeeper') return left(new TransactionNotAuthorizedError('shopkeeper'));
     if(payer.wallet.balance < input.value) return left(new BallanceNotEnoughError(payer.wallet.balance, input.value));
 
     try {
+      const authorization = await this.authorizerGateway.authorize();
+
+      if(authorization.message === AuthorizerStatus.UNAUTHORIZED) return left(new TransactionNotAuthorizedError());
+
       const transactionOrError = Transaction.create({
         payer: input.payer,
         payee: input.payee,
