@@ -1,12 +1,14 @@
 import { InvalidValueError } from "@core/domain/entities/@errors/invalid-value.error";
 import { Transaction } from "@core/domain/entities/transaction";
 import { User } from "@core/domain/entities/user";
+import { AuthorizerGateway, AuthorizerStatus } from "@core/domain/gateways/authorizer.interface";
 import { TransactionRepository } from "@core/domain/repositories/transaction-repository.interface";
 import { UserRepository } from "@core/domain/repositories/user-repository.interface";
 import { BallanceNotEnoughError } from "../@errors/ballance-not-enough.error";
 import { PayeeNotFoundError } from "../@errors/payee-not-found.error";
 import { PayerNotFoundError } from "../@errors/payer-not-found.error";
-import { ShopkeeperCannotMakeTransactionsError } from "../@errors/shopkeeper-cannot-make-transactions.error";
+import { TransactionNotAuthorizedError } from "../@errors/transaction-not-authorized.error";
+import { InMemoryAuthorizerGateway } from "../__tests__/repositories/in-memory-authorizer-gateway";
 import { InMemoryTransactionRepository } from "../__tests__/repositories/in-memory-transaction-repository";
 import { InMemoryUserRepository } from "../__tests__/repositories/in-memory-user-repository";
 import { NewTransactionUseCase } from "./new-transaction.usecase";
@@ -14,6 +16,7 @@ import { NewTransactionUseCase } from "./new-transaction.usecase";
 describe('new transaction usecase', () => {
   let userRepository: UserRepository;
   let transactionRepository: TransactionRepository;
+  let authorizerGateway: AuthorizerGateway;
   let usecase: NewTransactionUseCase
 
   let payer: User
@@ -22,6 +25,7 @@ describe('new transaction usecase', () => {
   beforeEach(async () => {
     userRepository = new InMemoryUserRepository();
     transactionRepository = new InMemoryTransactionRepository();
+    authorizerGateway = new InMemoryAuthorizerGateway();
 
     payer = User.create({
       name: 'John Doe',
@@ -42,7 +46,7 @@ describe('new transaction usecase', () => {
     await userRepository.save(payer);
     await userRepository.save(payee);
 
-    usecase = new NewTransactionUseCase(userRepository, transactionRepository);
+    usecase = new NewTransactionUseCase(userRepository, transactionRepository, authorizerGateway);
   })
 
   it('should create a new transaction', async () => {
@@ -105,7 +109,7 @@ describe('new transaction usecase', () => {
     })
 
     expect(response.isLeft()).toBeTruthy();
-    expect(response.value).toBeInstanceOf(ShopkeeperCannotMakeTransactionsError);
+    expect(response.value).toBeInstanceOf(TransactionNotAuthorizedError);
   })
 
   it('should not create a new transaction if payer does not have enough balance', async () => {
@@ -157,5 +161,45 @@ describe('new transaction usecase', () => {
 
     expect(payer.wallet.balance).toBe(100);
     expect(payee.wallet.balance).toBe(0);
+  })
+
+  it('should not create a new transaction if authorizer gateway return unauthorized', async () => {
+    const authorizeSpy = jest.spyOn(authorizerGateway, 'authorize').mockImplementationOnce(async () => {
+      return { message: AuthorizerStatus.UNAUTHORIZED }
+    })
+
+    const response = await usecase.execute({
+      payer: payer.id,
+      payee: payee.id,
+      value: 50,
+    })
+    
+    expect(response.isLeft()).toBeTruthy();
+    expect(response.value).toBeInstanceOf(TransactionNotAuthorizedError);
+    expect(authorizeSpy).toHaveBeenCalled();
+
+    expect(payer.wallet.balance).toBe(100);
+    expect(payee.wallet.balance).toBe(0);
+    expect(transactionRepository['transactions']).toHaveLength(0);
+  })
+
+  it('should not create a new transaction if authorizer gateway fails', async () => {
+    const authorizeSpy = jest.spyOn(authorizerGateway, 'authorize').mockImplementationOnce(() => {
+      throw new Error('Authorizer gateway failed');
+    })
+
+    const response = await usecase.execute({
+      payer: payer.id,
+      payee: payee.id,
+      value: 50,
+    })
+
+    expect(response.isLeft()).toBeTruthy();
+    expect(response.value).toBeInstanceOf(Error);
+    expect(authorizeSpy).toHaveBeenCalled();
+
+    expect(payer.wallet.balance).toBe(100);
+    expect(payee.wallet.balance).toBe(0);
+    expect(transactionRepository['transactions']).toHaveLength(0);
   })
 })
