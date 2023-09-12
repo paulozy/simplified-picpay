@@ -1,5 +1,6 @@
 import { InvalidValueError } from "@core/domain/entities/@errors/invalid-value.error";
 import { Transaction } from "@core/domain/entities/transaction";
+import { UserType } from "@core/domain/entities/user";
 import { AuthorizerGateway, AuthorizerStatus } from "@core/domain/gateways/authorizer.interface";
 import { TransactionRepository } from "@core/domain/repositories/transaction-repository.interface";
 import { UserRepository } from "@core/domain/repositories/user-repository.interface";
@@ -38,7 +39,7 @@ export class NewTransactionUseCase {
     if(!payer) return left(new PayerNotFoundError(input.payer));
     if(!payee) return left(new PayeeNotFoundError(input.payee));
 
-    if(payer.type === 'shopkeeper') return left(new TransactionNotAuthorizedError('shopkeeper'));
+    if(payer.type === UserType.SHOPKEEPER) return left(new TransactionNotAuthorizedError('shopkeeper'));
     if(payer.wallet.balance < input.value) return left(new BallanceNotEnoughError(payer.wallet.balance, input.value));
 
     try {
