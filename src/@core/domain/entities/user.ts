@@ -6,7 +6,7 @@ import { InvalidNameError } from "./@errors/invalid-name.error"
 import { InvalidTypeError } from "./@errors/invalid-type.error"
 import { Wallet } from "./wallet.vo"
 
-enum UserType {
+export enum UserType {
   COMMON = 'common',
   SHOPKEEPER = 'shopkeeper'
 }
