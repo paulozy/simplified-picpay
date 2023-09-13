@@ -9,3 +9,33 @@ datasource db {
   provider = "mongodb"
   url      = env("DATABASE_URL")
 }
+
+type Wallet {
+  balance    Float
+  updated_at Int
+}
+
+model User {
+  id       String @id @default(uuid()) @map("_id")
+  name     String
+  email    String @unique
+  document String @unique
+  type     String
+  wallet   Wallet
+
+  created_at Int
+  updated_at Int
+
+  @@map("users")
+}
+
+model Transaction {
+  id    String @id @default(uuid()) @map("_id")
+  payer String
+  payee String
+  value Float
+
+  created_at Int
+
+  @@map("transactions")
+}
