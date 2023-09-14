@@ -1,6 +1,7 @@
 import { User } from "@core/domain/entities/user"
 import { UserRepository } from "@core/domain/repositories/user-repository.interface"
 import { User as PrismaUser } from "@prisma/client"
+import { MapperUserError } from "src/infra/@shared/errors/mapper-user.error"
 import { PrismaService } from "../prisma.service"
 import { PrismaUserRepository } from "./prisma-user.repository"
 
@@ -94,5 +95,13 @@ describe('Prisma User Repository', () => {
     const user = await repository.findById('other_id')
 
     expect(user).toBeNull()
+  })
+
+  it('should throw if user mapper throws', async () => {
+    const spy = jest.spyOn(prisma.user, 'findUnique').mockImplementationOnce(() => {
+      throw new MapperUserError('any_error')
+    })
+
+    await expect(() => repository.findById(defaultUser.id)).rejects.toThrow()
   })
 })
