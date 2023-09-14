@@ -36,6 +36,8 @@ export class PrismaUserRepository implements UserRepository {
       }
     })
 
+    if(!rawData) return null;
+
     const user = UserMapper.toDomain(rawData);
 
     return user;
@@ -47,6 +49,8 @@ export class PrismaUserRepository implements UserRepository {
         id
       }
     })
+
+    if(!rawData) return null;
 
     const user = UserMapper.toDomain(rawData);
 
