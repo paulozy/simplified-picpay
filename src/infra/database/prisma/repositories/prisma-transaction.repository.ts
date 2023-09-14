@@ -28,17 +28,14 @@ export class PrismaTransactionRepository implements TransactionRepository {
     return transaction;
   }
   
-  async list({payer, payee, date, value}: ListTransactionsInput): Promise<Transaction[]> {
-    const normalizedDate = new Date(date).getTime()
-
+  async list({payer, payee, value}: ListTransactionsInput): Promise<Transaction[]> {
     const rawData = await this.prisma.transaction.findMany({
       where: {
         OR: [
           { payer },
-          { payee }
-        ],
-        created_at: normalizedDate,
-        value
+          { payee },
+          { value }
+        ]
       }
     })
 
