@@ -5,7 +5,7 @@ import { ListTransactionsUseCase } from "../usecases/transactions/list-transacti
 import { NewTransactionUseCase } from "../usecases/transactions/new-transaction.usecase";
 import { ShowTransactionUseCase } from "../usecases/transactions/show-transaction.usecase";
 
-export interface TransactionUseCases {
+export interface ITransactionUseCases {
   new: NewTransactionUseCase
   show: ShowTransactionUseCase
   list: ListTransactionsUseCase
