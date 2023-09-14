@@ -10,7 +10,7 @@ import { PayeeNotFoundError } from "../@errors/payee-not-found.error";
 import { PayerNotFoundError } from "../@errors/payer-not-found.error";
 import { TransactionNotAuthorizedError } from "../@errors/transaction-not-authorized.error";
 
-export type NewTransactionUseCaseInput = {
+export type NewTransactionInput = {
   payer: string;
   payee: string;
   value: number;
@@ -32,7 +32,7 @@ export class NewTransactionUseCase {
     private readonly authorizerGateway: AuthorizerGateway
   ) {}
 
-  async execute(input: NewTransactionUseCaseInput): Promise<NewTransactionUseCaseResponse> {
+  async execute(input: NewTransactionInput): Promise<NewTransactionUseCaseResponse> {
     const payer = await this.userRepository.findById(input.payer);
     const payee = await this.userRepository.findById(input.payee);
 
