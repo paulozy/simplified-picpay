@@ -3,7 +3,7 @@ import { RegisterUserUseCase } from "../usecases/users/register-user.usecase";
 import { ShowUserUseCase } from "../usecases/users/show-user.usecase";
 import { UpdateUserUseCase } from "../usecases/users/update-user.usecase";
 
-export interface UserUseCases {
+export interface IUserUseCases {
   show: ShowUserUseCase
   register: RegisterUserUseCase
   update: UpdateUserUseCase
