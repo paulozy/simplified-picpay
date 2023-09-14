@@ -58,10 +58,16 @@ describe('Prisma User Repository', () => {
     
     await repository.save(user)
 
-    expect(user).toBeTruthy()
-    expect(user.id).toBeTruthy()
-    expect(user.wallet).toBeTruthy()
-    expect(user.wallet.balance).toBe(0)
+    const savedUser = await prisma.user.findUnique({
+      where: { id: user.id }
+    })
+
+    expect(savedUser).toBeTruthy()
+    expect(savedUser?.name).toBe(user.name)
+    expect(savedUser?.document).toBe(user.document)
+    expect(savedUser?.email).toBe(user.email)
+    expect(savedUser?.type).toBe(user.type)
+    expect(savedUser?.wallet.balance).toBe(user.wallet.balance)
   })
 
   it('should return user by email', async () => {
