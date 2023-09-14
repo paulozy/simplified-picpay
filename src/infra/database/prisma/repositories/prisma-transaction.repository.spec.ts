@@ -1,6 +1,7 @@
 import { Transaction } from "@core/domain/entities/transaction"
 import { TransactionRepository } from "@core/domain/repositories/transaction-repository.interface"
 import { Transaction as PrismaTransaction } from "@prisma/client"
+import { MapperTransactionError } from "src/infra/@shared/errors/mapper-transaction.error"
 import { PrismaService } from "../prisma.service"
 import { PrismaTransactionRepository } from "./prisma-transaction.repository"
 
@@ -87,5 +88,13 @@ describe('Prisma Transaction Repository', () => {
     expect(transactions).toBeTruthy()
     expect(transactions.length).toBe(1)
     expect(transactions[0].value).toBe(defaultTransaction.value)
+  })
+
+  it('should throw if transaction mapper throws', async () => {
+    jest.spyOn(prisma.transaction, 'findUnique').mockImplementationOnce(() => {
+      throw new MapperTransactionError('any_error')
+    })
+
+    await expect(repository.findById(defaultTransaction.id)).rejects.toThrow()
   })
 })
