@@ -10,7 +10,7 @@ export class UserViewModel {
       type: user.type,
       wallet: {
         balance: user.wallet.balance,
-        updated_at: user.wallet.updated_at,
+        updatedAt: user.wallet.updated_at,
       },
       createdAt: user.created_at,
       updatedAt: user.updated_at,
