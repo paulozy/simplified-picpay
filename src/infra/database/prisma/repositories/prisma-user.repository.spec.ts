@@ -11,9 +11,9 @@ describe('Prisma User Repository', () => {
 
   let defaultUser: PrismaUser
 
-  beforeEach(async () => {
-    prisma = new PrismaService()
+  beforeAll(() => prisma = new PrismaService())
 
+  beforeEach(async () => {
     defaultUser = await prisma.user.create({
       data: {
         name: 'any_name',
@@ -34,6 +34,9 @@ describe('Prisma User Repository', () => {
 
   afterEach(async () => {
     await prisma.user.deleteMany()
+  })
+
+  afterAll(async () => {
     await prisma.$disconnect()
   })
 
@@ -52,8 +55,8 @@ describe('Prisma User Repository', () => {
   it('should create a new user', async () => {
     const user = User.create({
       name: 'any_name',
-      document: '111.222.333-44',
-      email: 'any_email@email.com',
+      document: '111.222.333-34',
+      email: 'any_email2@email.com',
       type: 'common'
     }).value as User
     
