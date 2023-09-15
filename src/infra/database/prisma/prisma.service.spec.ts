@@ -18,4 +18,12 @@ describe('Prisma Service', () => {
 
     expect(spy).toHaveBeenCalled()
   })
+
+  it('should disconnect from database', async () => {
+    const spy = jest.spyOn(prisma, '$disconnect')
+
+    await prisma.onModuleDestroy()
+
+    expect(spy).toHaveBeenCalled()
+  })
 })
