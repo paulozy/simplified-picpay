@@ -16,7 +16,7 @@ export class UserController {
     const isValid = validator.validate(body);
 
     if (!isValid) {
-      throw new BadRequest(validator.errors);
+      throw new BadRequest(JSON.stringify(validator.errors));
     }
 
     const user = await this.userService.register(body);
@@ -37,7 +37,7 @@ export class UserController {
     const isValid = validator.validate(body);
 
     if (!isValid) {
-      throw new BadRequest(validator.errors);
+      throw new BadRequest(JSON.stringify(validator.errors));
     }
 
     const user = await this.userService.update({
