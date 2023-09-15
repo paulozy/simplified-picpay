@@ -19,8 +19,9 @@
     "prepare:db:test": "pnpm run prisma:generate && pnpm run prisma:push:test",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest --config ./jest.config.js",
+    "test:controller": "dotenv -e .env.test -- jest --config ./test/jest-controller.config.js --runInBand",
     "test:w": "jest --watch --config ./jest.config.js",
-    "test:c": "jest --coverage --config ./jest.config.js",
+    "test:c": "dotenv -e .env.test -- jest --coverage --config ./jest-coverage.config.js",
     "test:d": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
